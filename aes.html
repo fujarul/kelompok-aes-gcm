@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>AES-128 CBC Demo</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 0; padding: 20px; background: #f4f4f4; }
+    .container { max-width: 900px; margin: auto; background: white; padding: 30px; border-radius: 12px; box-shadow: 0 0 15px rgba(0,0,0,0.1); }
+    h2 { text-align: center; margin-bottom: 20px; color: #333; }
+    label { font-weight: bold; display: block; margin-top: 10px; }
+    textarea, input { width: 100%; padding: 12px; margin-top: 5px; border-radius: 6px; border: 1px solid #ccc; font-size: 14px; }
+    button { padding: 12px 25px; margin: 10px 5px 0 0; cursor: pointer; border: none; border-radius: 6px; font-size: 15px; }
+    .encrypt { background: #007bff; color: white; }
+    .encrypt:hover { background: #0056b3; }
+    .decrypt { background: #28a745; color: white; }
+    .decrypt:hover { background: #1e7e34; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>AES-128 CBC (Fixed IV)</h2>
+
+    <label>Plaintext:</label>
+    <textarea id="plaintext" rows="4" placeholder="Tulis teks asli di sini..."></textarea>
+
+    <label>Password (16 karakter = 128 bit):</label>
+    <input type="text" id="password" maxlength="16" placeholder="Contoh: abcdefghijklmnop">
+
+    <button class="encrypt" onclick="encrypt()">Encrypt</button>
+    <button class="decrypt" onclick="decrypt()">Decrypt</button>
+
+    <label>Hasil:</label>
+    <textarea id="output" rows="4" readonly placeholder="Ciphertext atau hasil dekripsi tampil di sini..."></textarea>
+  </div>
+
+  <!-- Library CryptoJS -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
+
+  <script>
+    // IV tetap (fixed, 16 karakter = 128 bit)
+    const fixedIV = CryptoJS.enc.Utf8.parse("1234567890abcdef");
+
+    function encrypt() {
+      let text = document.getElementById("plaintext").value;
+      let password = document.getElementById("password").value;
+
+      if (password.length !== 16) {
+        alert("Password harus 16 karakter (128 bit)!");
+        return;
+      }
+
+      let key = CryptoJS.enc.Utf8.parse(password);
+
+      let encrypted = CryptoJS.AES.encrypt(text, key, {
+        iv: fixedIV,
+        mode: CryptoJS.mode.CBC,
+        padding: CryptoJS.pad.Pkcs7
+      });
+
+      document.getElementById("output").value = encrypted.toString();
+    }
+
+    function decrypt() {
+      let ciphertext = document.getElementById("output").value;
+      let password = document.getElementById("password").value;
+
+      if (password.length !== 16) {
+        alert("Password harus 16 karakter (128 bit)!");
+        return;
+      }
+
+      let key = CryptoJS.enc.Utf8.parse(password);
+
+      let decrypted = CryptoJS.AES.decrypt(ciphertext, key, {
+        iv: fixedIV,
+        mode: CryptoJS.mode.CBC,
+        padding: CryptoJS.pad.Pkcs7
+      });
+
+      document.getElementById("plaintext").value = decrypted.toString(CryptoJS.enc.Utf8);
+    }
+  </script>
+</body>
+</html>
