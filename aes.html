@@ -1,83 +1,153 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>AES-128 CBC Demo</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>AES-128 Encryption</title>
   <style>
-    body { font-family: Arial, sans-serif; margin: 0; padding: 20px; background: #f4f4f4; }
-    .container { max-width: 900px; margin: auto; background: white; padding: 30px; border-radius: 12px; box-shadow: 0 0 15px rgba(0,0,0,0.1); }
-    h2 { text-align: center; margin-bottom: 20px; color: #333; }
-    label { font-weight: bold; display: block; margin-top: 10px; }
-    textarea, input { width: 100%; padding: 12px; margin-top: 5px; border-radius: 6px; border: 1px solid #ccc; font-size: 14px; }
-    button { padding: 12px 25px; margin: 10px 5px 0 0; cursor: pointer; border: none; border-radius: 6px; font-size: 15px; }
-    .encrypt { background: #007bff; color: white; }
-    .encrypt:hover { background: #0056b3; }
-    .decrypt { background: #28a745; color: white; }
-    .decrypt:hover { background: #1e7e34; }
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: Arial, sans-serif;
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+    }
+    .container {
+      background: #fff;
+      padding: 30px;
+      border-radius: 20px;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+      width: 600px;
+      max-width: 90%;
+    }
+    h1 {
+      text-align: center;
+      color: #333;
+      margin-bottom: 20px;
+    }
+    label {
+      font-weight: bold;
+      margin-top: 12px;
+      display: block;
+      text-align: left;
+    }
+    input, textarea {
+      width: 100%;
+      padding: 10px;
+      margin-top: 6px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      font-size: 14px;
+    }
+    textarea {
+      resize: vertical;
+    }
+    .btn-group {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 20px;
+    }
+    button {
+      flex: 1;
+      margin: 0 5px;
+      padding: 12px;
+      font-size: 15px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      background: #667eea;
+      color: #fff;
+      transition: 0.3s;
+    }
+    button:hover {
+      background: #764ba2;
+    }
+    .output {
+      margin-top: 15px;
+      background: #f9f9f9;
+      padding: 10px;
+      border-radius: 8px;
+      font-family: monospace;
+      min-height: 40px;
+      word-wrap: break-word;
+      text-align: left;
+    }
   </style>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
 </head>
 <body>
   <div class="container">
-    <h2>AES-128 CBC (Fixed IV)</h2>
+    <h1>AES-128 Encryption</h1>
 
-    <label>Plaintext:</label>
-    <textarea id="plaintext" rows="4" placeholder="Tulis teks asli di sini..."></textarea>
+    <label for="key">Key (16 karakter):</label>
+    <input type="text" id="key" value="abcdefghijklmnop">
 
-    <label>Password (16 karakter = 128 bit):</label>
-    <input type="text" id="password" maxlength="16" placeholder="Contoh: abcdefghijklmnop">
+    <label for="iv">IV (16 karakter):</label>
+    <input type="text" id="iv" value="1234567890abcdef">
 
-    <button class="encrypt" onclick="encrypt()">Encrypt</button>
-    <button class="decrypt" onclick="decrypt()">Decrypt</button>
+    <label for="plaintext">Plaintext:</label>
+    <textarea id="plaintext" rows="3">This is 16 bytes</textarea>
 
-    <label>Hasil:</label>
-    <textarea id="output" rows="4" readonly placeholder="Ciphertext atau hasil dekripsi tampil di sini..."></textarea>
+    <div class="btn-group">
+      <button onclick="encrypt()">Enkripsi</button>
+      <button onclick="decrypt()">Dekripsi</button>
+    </div>
+
+    <label for="ciphertext">Ciphertext (Base64):</label>
+    <!-- Diubah jadi textarea agar bisa diisi manual -->
+    <textarea id="ciphertext" rows="3"></textarea>
+
+    <label for="decrypted">Hasil Dekripsi:</label>
+    <div class="output" id="decrypted"></div>
   </div>
 
-  <!-- Library CryptoJS -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
-
   <script>
-    // IV tetap (fixed, 16 karakter = 128 bit)
-    const fixedIV = CryptoJS.enc.Utf8.parse("1234567890abcdef");
-
     function encrypt() {
-      let text = document.getElementById("plaintext").value;
-      let password = document.getElementById("password").value;
+      const keyInput = document.getElementById("key").value;
+      const ivInput = document.getElementById("iv").value;
+      const plaintext = document.getElementById("plaintext").value;
 
-      if (password.length !== 16) {
-        alert("Password harus 16 karakter (128 bit)!");
+      if (keyInput.length !== 16 || ivInput.length !== 16) {
+        alert("Key dan IV harus 16 karakter (128 bit).");
         return;
       }
 
-      let key = CryptoJS.enc.Utf8.parse(password);
+      const key = CryptoJS.enc.Utf8.parse(keyInput);
+      const iv = CryptoJS.enc.Utf8.parse(ivInput);
 
-      let encrypted = CryptoJS.AES.encrypt(text, key, {
-        iv: fixedIV,
+      const encrypted = CryptoJS.AES.encrypt(plaintext, key, {
+        iv: iv,
         mode: CryptoJS.mode.CBC,
         padding: CryptoJS.pad.Pkcs7
       });
 
-      document.getElementById("output").value = encrypted.toString();
+      // Hasil langsung ditampilkan ke textarea agar bisa disalin
+      document.getElementById("ciphertext").value = encrypted.toString();
     }
 
     function decrypt() {
-      let ciphertext = document.getElementById("output").value;
-      let password = document.getElementById("password").value;
+      const keyInput = document.getElementById("key").value;
+      const ivInput = document.getElementById("iv").value;
+      const ciphertext = document.getElementById("ciphertext").value;
 
-      if (password.length !== 16) {
-        alert("Password harus 16 karakter (128 bit)!");
+      if (!ciphertext) {
+        alert("Masukkan ciphertext dalam format Base64 terlebih dahulu.");
         return;
       }
 
-      let key = CryptoJS.enc.Utf8.parse(password);
+      const key = CryptoJS.enc.Utf8.parse(keyInput);
+      const iv = CryptoJS.enc.Utf8.parse(ivInput);
 
-      let decrypted = CryptoJS.AES.decrypt(ciphertext, key, {
-        iv: fixedIV,
+      const decrypted = CryptoJS.AES.decrypt(ciphertext, key, {
+        iv: iv,
         mode: CryptoJS.mode.CBC,
         padding: CryptoJS.pad.Pkcs7
       });
 
-      document.getElementById("plaintext").value = decrypted.toString(CryptoJS.enc.Utf8);
+      document.getElementById("decrypted").innerText = decrypted.toString(CryptoJS.enc.Utf8);
     }
   </script>
 </body>
